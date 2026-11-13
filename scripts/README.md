@@ -9,6 +9,7 @@ ThemeFinder pipeline. They run as a self-contained `uv` project under
 | `setup_consultation.py` | Validate a Q.U. workbook against a response file, build the ThemeFinder input layout (`respondents.jsonl`, `question_part_<n>/...`), and upload the result to S3. |
 | `build_consult_data_template.py` | Generate `consult_data_template_v003.xlsx` — an opinionated Q.U. workbook skeleton with live in-sheet validation rules and a pre-populated dummy Responses sheet. |
 | `build_consult_data_dummy_content.py` | Static word lists used as dummy content by the template builder. Not run directly. |
+| `pdf_submissions_to_csv.py` | Turn a folder of PDF submissions (one per respondent) into a one-column CSV for the Consult upload ("Citizen Space" layout), plus a manifest mapping each row to its PDF. Strips submitter details, page furniture and consent sections, and flags scanned PDFs and submissions over the embedding token limit. |
 
 The full set of validation rules implemented in both
 `setup_consultation.py` and the in-sheet checks in
@@ -62,3 +63,21 @@ make test-consultation-scripts
 Fixtures in `tests/fixtures/setup_consultation/` cover the three
 response-file layouts and two Q.U. workbook formats we've seen in real
 consultations.
+
+## Converting PDF submissions
+
+When each submission is its own PDF, convert the folder to an upload CSV:
+
+```bash
+cd scripts
+uv run python pdf_submissions_to_csv.py ~/submissions \
+    --output submissions.csv --manifest submissions_manifest.csv \
+    --text-dir cleaned_text
+```
+
+Upload `submissions.csv` with the "Citizen Space" data source. Keep
+`submissions_manifest.csv` out of the upload: it maps CSV row numbers back to
+the source PDFs and lists flagged files (`no_text` = scanned, needs OCR;
+`over_token_limit` = longer than the 8,192-token embedding limit). Spot-check
+`cleaned_text/` first, including that redacted words are really gone: black
+boxes drawn over text do not remove it from the PDF.
