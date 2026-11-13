@@ -10,9 +10,9 @@ help:     ## Show this help.
 
 .PHONY: install
 install: ## Install all dependencies
-	pre-commit install
-	cp .githooks/* .git/hooks/
 	TZ=UTC uv sync --all-packages --all-extras --group dev
+	uv run --no-sync pre-commit install
+	cp .githooks/* .git/hooks/
 	. "$(NVM_DIR)/nvm.sh" && cd frontend && nvm install && npm install
 	. "$(NVM_DIR)/nvm.sh" && cd e2e_tests && nvm install && npm install
 
@@ -196,6 +196,8 @@ dummy_data: ## Generate dummy consultations. Only works in dev
 .PHONY: dev_environment
 dev_environment: setup_db ## set up the database with dummy data
 	cd backend && PYTHONPATH=.. uv run python manage.py prepare_environment
+	cd backend && PYTHONPATH=.. uv run python manage.py createadminusers
+	cd backend && PYTHONPATH=.. uv run python manage.py generate_dummy_data --skip-if-exists
 
 # Docker
 AWS_REGION=eu-west-2

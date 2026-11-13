@@ -46,7 +46,7 @@ make install
 make setup
 ```
 
-The `make install` command installs the correct Python and Node versions and all dependencies. And `make setup` creates `.env` files from templates and sets up the database with dummy data and an admin user (`email@example.com` / `admin`).
+The `make install` command installs the correct Python and Node versions and all dependencies. And `make setup` creates `.env` files from templates and sets up the database with dummy data and the local admin users from `ADMIN_USERS` in `.env` (`admin@example.com` and `policy@example.com`). Locally there is no password: the frontend signs you in automatically.
 
 ### Running the application
 
